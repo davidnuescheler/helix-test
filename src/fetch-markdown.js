@@ -16,7 +16,7 @@ const { setdefault } = require('ferrum');
 /**
  * Fetches the Markdown from google docs
  */
-async function fetch(context, secrets, logger, resourcePath) {
+async function fetch(context, secrets, logger, resourcePath, rootId) {
   const content = setdefault(context, 'content', {});
 
   let timeout;
@@ -26,7 +26,7 @@ async function fetch(context, secrets, logger, resourcePath) {
     timeout = secrets.HTTP_TIMEOUT;
   }
 
-  const uri = `${secrets.REPO_RAW_ROOT}?path=${encodeURIComponent(resourcePath)}`;
+  const uri = `${secrets.REPO_RAW_ROOT}?path=${encodeURIComponent(resourcePath)}&rootId=${encodeURIComponent(rootId)}`;
 
   const options = {
     uri,

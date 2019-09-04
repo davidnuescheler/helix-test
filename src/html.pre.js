@@ -11,6 +11,7 @@
  */
 const jquery = require('jquery');
 const fetch = require('./fetch-markdown.js');
+const fetchFSTab = require('./fetch-fstab.js');
 
 /**
  * The 'pre' function that is executed before the HTML is rendered
@@ -51,20 +52,33 @@ function pre(context) {
 module.exports.pre = pre;
 
 module.exports.before = {
-  fetch: async (context, { logger, request, secrets }) => {
-    // logger.info(JSON.stringify(request, null, 2));
+  fetch: async (context, action) => {
+    const { logger, request, secrets } = action;
 
+    // todo: cache the fstab
+    const fstab = await fetchFSTab(context, action);
+    if (!fstab) {
+      return;
+    }
+
+    // logger.info(JSON.stringify(request, null, 2));
     const idx = request.params.path.lastIndexOf('.');
     const resourcePath = decodeURIComponent(request.params.path.substring(0, idx));
+    logger.info('resourcePath=' + resourcePath);
+
+    // find the mountpoint for the path
+    const mp = fstab.mountpoints.find((m) => resourcePath.startsWith(m.root));
+    if (!mp) {
+      logger.info(`no mount point for ${resourcePath}`);
+      return;
+    }
+    const relPath = resourcePath.substring(mp.root.length);
+    logger.info('relPath=' + relPath);
 
     const oldRaw = secrets.REPO_RAW_ROOT;
-
-    logger.info('resourcePath=' + resourcePath);
-    secrets.REPO_RAW_ROOT = 'https://script.google.com/macros/s/AKfycbyJm5vcxgUcD_BL_HEaXOkYZ1jQGVsHeLkDjlAe31xEQ8P7-wq_/exec';
+    secrets.REPO_RAW_ROOT = 'https://script.google.com/macros/s/AKfycbyhd6MX1FIwQZ_zzsX4xl-mRmg2k3lL1jfhyaLribZ2cyLOykeq/exec';
     secrets.HTTP_TIMEOUT = 10000;
-
-    await fetch(context, secrets, logger, resourcePath);
-
+    await fetch(context, secrets, logger, relPath, mp.id);
     secrets.REPO_RAW_ROOT = oldRaw;
 
     // fetch is constructing this url

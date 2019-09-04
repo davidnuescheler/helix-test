@@ -1,0 +1,9 @@
+{
+  "mountpoints": [
+    {
+      "root": "/mystuff",
+      "type": "google",
+      "id": "1I_FwT5qXkZTevAeZ9EqUqLaS0RbLFkI2"
+    }
+  ]
+}

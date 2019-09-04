@@ -1,6 +1,6 @@
 function test() {
   try {
-    var md=toMarkdown("reloader");
+    var md=toMarkdown("1I_FwT5qXkZTevAeZ9EqUqLaS0RbLFkI2", "/welcome");
     // var md=toMarkdown("mytest/test");
     // var md = toMarkdown("Helix Hackathon Part V");
     Logger.log(md);
@@ -18,12 +18,16 @@ function error(msg, code) {
 function doGet(req) {
   try {
     var path = req.parameter["path"] || req.pathInfo;
-    console.log('generating markdown for: ' + path);
     if (!path) {
       throw error('no path', 404);
     }
+    var rootId = req.parameter["rootId"];
+    if (!rootId) {
+      throw error('no rootId', 404);
+    }
+    console.log('generating markdown for: %s/%s', rootId, path);
 
-    var md = toMarkdown(path);
+    var md = toMarkdown(rootId, path);
 
     var json = JSON.stringify({
       "statusCode": 200,
@@ -158,8 +162,8 @@ function processText(inSrc, txt) {
   return pOut;
 }
 
-function toMarkdown(path) {
-  var doc = DocumentApp.openById(getDocId(path));
+function toMarkdown(folderId, path) {
+  var doc = DocumentApp.openById(getDocId(folderId, path));
   var body = doc.getBody();
 
   var result = "";
